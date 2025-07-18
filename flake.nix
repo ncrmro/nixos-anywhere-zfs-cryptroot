@@ -3,12 +3,14 @@
   inputs.disko.url = "github:nix-community/disko";
   inputs.disko.inputs.nixpkgs.follows = "nixpkgs";
   inputs.nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
+  inputs.lanzaboote.url = "github:nix-community/lanzaboote/v0.4.2";
 
   outputs =
     {
       nixpkgs,
       disko,
       nixos-facter-modules,
+      lanzaboote,
       ...
     }:
     {
@@ -42,6 +44,24 @@
       nixosConfigurations.generic = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          lanzaboote.nixosModules.lanzaboote
+          ({ pkgs, lib, ... }: {
+            environment.systemPackages = [
+              # For debugging and troubleshooting Secure Boot.
+              pkgs.sbctl
+            ];
+
+            # Lanzaboote currently replaces the systemd-boot module.
+            # This setting is usually set to true in configuration.nix
+            # generated at installation time. So we force it to false
+            # for now.
+            boot.loader.systemd-boot.enable = lib.mkForce false;
+
+            boot.lanzaboote = {
+              enable = true;
+              pkiBundle = "/var/lib/sbctl";
+            };
+          })
           disko.nixosModules.disko
           ./configuration.nix
           ./hardware-configuration.nix

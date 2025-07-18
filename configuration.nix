@@ -21,6 +21,7 @@
   environment.systemPackages = map lib.lowPrio [
     pkgs.curl
     pkgs.gitMinimal
+    pkgs.sbctl
   ];
   boot.initrd.systemd.emergencyAccess = true;
 
